@@ -26,5 +26,4 @@ for im in imagePaths:
 data=np.array(data,dtype="float32")
 labels=np.array(labels)
 
-
 print(labels)

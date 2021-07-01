@@ -1,0 +1,2 @@
+0 Sin_mascara
+1 Con_mascara

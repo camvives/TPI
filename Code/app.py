@@ -12,6 +12,7 @@ face_locations = []
 flag_ant = datetime.datetime.now() - datetime.timedelta(minutes=1)
 model = tensorflow.keras.models.load_model("converted_keras\keras_model.h5")
 color = (0,0,0)
+text = ''
 
 def detect_mask(img_path: str):
     # Create the array of the right shape to feed into the keras model
@@ -29,12 +30,13 @@ def detect_mask(img_path: str):
 
     # run the inference
     prediction = model.predict(data)
-    global color
-    if prediction[0][0] < prediction[0][1]:
-        print('Tiene barbijo')
+    global color, text
+    mask_prediction = prediction[0][1]
+    if  mask_prediction >= 0.5:
+        text = 'Tiene cubrebocas ' + str(round(mask_prediction*100,1)) + '%'
         color = (0, 255, 0)
     else:
-        print('No tiene barbijo')        
+        text = 'No tiene cubrebocas ' + str(round(prediction[0][0]*100,1)) + '%'       
         color = (0,0,255)
 
 
@@ -45,16 +47,17 @@ while True:
     
     if face_locations:
         flag = datetime.datetime.now()
-        for top, right, bottom, left in face_locations:
-            
+        for top, right, bottom, left in face_locations:          
             cv2.rectangle(frame, (left-15, top-35), (right+15, bottom+15), color, 3)
+            cv2.putText(frame, text, (20, 50), cv2.FONT_HERSHEY_PLAIN, 1, color, 1)
 
-        time_change = datetime.timedelta(minutes=1)
+        time_change = datetime.timedelta(seconds=5)
 
         if flag > (flag_ant + time_change):   
             path = 'Code\imagenes\Frame.jpg'
             cv2.imwrite(path, frame)
             detect_mask(path)
+            flag_ant = datetime.datetime.now()
 
 
     cv2.imshow('Mask Detector', frame)

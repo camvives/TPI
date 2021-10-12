@@ -13,6 +13,8 @@ flag_ant = datetime.datetime.now() - datetime.timedelta(minutes=1)
 model = tensorflow.keras.models.load_model("converted_keras\keras_model.h5")
 color = (0,0,0)
 text = ''
+est_ant = None
+
 
 def detect_mask(img_path: str):
     # Create the array of the right shape to feed into the keras model
@@ -30,14 +32,31 @@ def detect_mask(img_path: str):
 
     # run the inference
     prediction = model.predict(data)
-    global color, text
+    global color, text, est_ant
+
     mask_prediction = prediction[0][1]
+
     if  mask_prediction >= 0.5:
         text = 'Tiene cubrebocas ' + str(round(mask_prediction*100,1)) + '%'
         color = (0, 255, 0)
+
+        if est_ant is False or est_ant is None:
+            save_state('con_mascara')
+            est_ant = True 
     else:
         text = 'No tiene cubrebocas ' + str(round(prediction[0][0]*100,1)) + '%'       
         color = (0,0,255)
+
+        if est_ant or est_ant is None:
+            save_state('sin_mascara')
+            est_ant = False 
+
+
+def save_state(state: str):
+    #
+    # Falta programar módulo de guardado en SQLite
+    #
+    print('estado guardado en DB:', state, str(datetime.datetime.now())) 
 
 
 while True:

@@ -1,2 +1,2 @@
-0 Sin_mascara
-1 Con_mascara
+0 Sin_máscara
+1 Con_máscara

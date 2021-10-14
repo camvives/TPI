@@ -131,3 +131,5 @@ dmypy.json
 Code/.vscode/
 
 Code/imagenes/Frame.jpg
+
+facemask.db

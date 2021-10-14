@@ -5,8 +5,10 @@ from face_recognition_models import cnn_face_detector_model_location
 import tensorflow.keras
 import numpy as np
 from PIL import Image, ImageOps
+import os
+import data
 
-
+data.initialize()
 cap = cv2.VideoCapture(0)
 face_locations = []
 flag_ant = datetime.datetime.now() - datetime.timedelta(minutes=1)
@@ -17,20 +19,25 @@ est_ant = None
 
 
 def detect_mask(img_path: str):
-    # Create the array of the right shape to feed into the keras model
-    # The number of images you can put into the array is 1 in this case.
+    '''Detecta si el rostro reconocido está usando cubrebocas o no, inicializa 
+        el porcentaje de acierto y el color del rectangulo del ROI. Si el estado 
+        cambia, registra el cambio en la base de datos.
+        
+        @img_path debe ser el path de una imagen que contenga un rostro detectado'''
+
+    # Crear array del tamaño correcto para alimentar el modelo de keras
     data = np.ndarray(shape=(1, 224, 224, 3), dtype=np.float32)
     image = Image.open(img_path)
     size = (224, 224)
     image = ImageOps.fit(image, size, Image.ANTIALIAS)
     image_array = np.asarray(image)
-    # Normalize the image
+    # Normalizar la imagen
     normalized_image_array = (image_array.astype(np.float32) / 127.0) - 1
 
-    # Load the image into the array
+    # Cargar la imagen en el array
     data[0] = normalized_image_array
 
-    # run the inference
+    # Correr el motor de inferencia
     prediction = model.predict(data)
     global color, text, est_ant
 
@@ -53,10 +60,12 @@ def detect_mask(img_path: str):
 
 
 def save_state(state: str):
-    #
-    # Falta programar módulo de guardado en SQLite
-    #
-    print('estado guardado en DB:', state, str(datetime.datetime.now())) 
+    '''Registra el estado (con_mascara o sin_mascara) con fecha y hora'''
+
+    date = str(datetime.datetime.now())
+    data.save_state(state, date)
+
+    print('estado guardado en DB:', state, date) 
 
 
 while True:
@@ -83,5 +92,6 @@ while True:
     if cv2.waitKey(1) == ord('q'):
         cap.release()
         cv2.destroyAllWindows()
+        os.remove('Code\imagenes\Frame.jpg')
         break
         

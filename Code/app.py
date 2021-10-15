@@ -1,3 +1,4 @@
+from sqlite3.dbapi2 import Error
 import cv2
 import face_recognition
 import datetime
@@ -61,11 +62,13 @@ def detect_mask(img_path: str):
 
 def save_state(state: str):
     '''Registra el estado (con_mascara o sin_mascara) con fecha y hora'''
-
-    date = str(datetime.datetime.now())
-    data.save_state(state, date)
-
-    print('estado guardado en DB:', state, date) 
+    try:
+        date = str(datetime.datetime.now())
+        data.save_state(state, date)
+        print('Estado guardado en DB:', state, date)
+    except:
+        print('Ha ocurrido un error y no se ha podido guardar el estado en la BD')
+    
 
 
 while True:

@@ -3,22 +3,32 @@ import cv2
 import face_recognition
 import datetime
 from face_recognition_models import cnn_face_detector_model_location
+from numpy.core import machar
 from numpy.core.records import array
 import tensorflow.keras
 import numpy as np
 from PIL import Image, ImageOps, ImageTk
 import db
+import time
 
 db.initialize()
 model = tensorflow.keras.models.load_model("converted_keras\keras_model.h5")
-text = ''
 color = (0,0,0)
-est_ant = None
+text = ' '
+
+def change_state(has_mask:bool, prediction:int):
+    global color, text
+
+    if  has_mask:
+        text = 'Tiene cubrebocas ' + str(round(prediction*100,1)) + '%'
+        color = (0, 255, 0)
+    else:
+        text = 'No tiene cubrebocas ' + str(round(prediction*100,1)) + '%'       
+        color = (0,0,255)
 
 def detect_mask(img_path: str):
-    '''Detecta si el rostro reconocido está usando cubrebocas o no, inicializa 
-        el porcentaje de acierto y el color del rectangulo del ROI. Si el estado 
-        cambia, registra el cambio en la base de datos.
+    '''Detecta si el rostro reconocido está usando cubrebocas o no y devuelve 
+       las predicciones
         
         @img_path debe ser el path de una imagen que contenga un rostro detectado'''
 
@@ -37,27 +47,13 @@ def detect_mask(img_path: str):
     # Correr el motor de inferencia
     prediction = model.predict(data)
 
-    global text, color, est_ant
-
     mask_prediction = prediction[0][1]
+    no_mask_prediction = prediction[0][0]
 
-    if  mask_prediction >= 0.5:
-        text = 'Tiene cubrebocas ' + str(round(mask_prediction*100,1)) + '%'
-        color = (0, 255, 0)
+    if mask_prediction >=0.6:
+        return True, mask_prediction
 
-        if est_ant is False or est_ant is None:
-            save_state('con_mascara')
-            est_ant = True 
-        return color
-    
-    text = 'No tiene cubrebocas ' + str(round(prediction[0][0]*100,1)) + '%'       
-    color = (0,0,255)
-
-    if est_ant or est_ant is None:
-        save_state('sin_mascara')
-        est_ant = False       
-    return color
-
+    return False, no_mask_prediction
 
 def save_state(state: str):
     '''Registra el estado (con_mascara o sin_mascara) con fecha y hora'''
@@ -68,11 +64,9 @@ def save_state(state: str):
     except:
         print('Ha ocurrido un error y no se ha podido guardar el estado en la BD')
     
-
 def show_video():
-    global cap, color, est_ant
+    global cap, color, text
     face_locations = []   
-    flag_ant = datetime.datetime.now() - datetime.timedelta(seconds=10)
 
     ret, frame = cap.read() 
     rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -84,24 +78,36 @@ def show_video():
             cv2.rectangle(frame, (left-15, top-35), (right+15, bottom+15), color, 3)
             cv2.putText(frame, text, (20, 50), cv2.FONT_HERSHEY_PLAIN, 1, color, 1)
 
-        time_change = datetime.timedelta(seconds=5)
-
-        if flag > (flag_ant + time_change):   
-            path = 'Code\imagenes\Frame.jpg'
-            cv2.imwrite(path, frame)
-            color = detect_mask(path)
-            flag_ant = datetime.datetime.now()
+    process_image(frame)
 
     frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
     im = Image.fromarray(frame)
     img = ImageTk.PhotoImage(image=im)
     return img
 
-
 def capture():
     global cap
     cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
 
+def process_image(frame: array):
+    path = 'Code\imagenes\Frame.jpg'
+    cv2.imwrite(path, frame)
+    has_mask, percent = detect_mask(path)
+    change_state(has_mask, percent)
 
+    state = db.get_last_state()
+    if state != None:
+        prev_st, prev_time = state
+        now = datetime.datetime.now()
+        extra_time = prev_time + datetime.timedelta(seconds=30)
+        
+        if has_mask:
+            act_state = 'con_mascara'
+        else:
+            act_state = 'sin_mascara' 
 
+        if prev_st != has_mask or now > extra_time:
+            save_state(act_state)
+    else:
+        save_state("init")
 

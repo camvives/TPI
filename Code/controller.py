@@ -3,21 +3,17 @@ import cv2
 import face_recognition
 import datetime
 from face_recognition_models import cnn_face_detector_model_location
+from numpy.core.records import array
 import tensorflow.keras
 import numpy as np
-from PIL import Image, ImageOps
-import os
-import data
+from PIL import Image, ImageOps, ImageTk
+import db
 
-data.initialize()
-cap = cv2.VideoCapture(0)
-face_locations = []
-flag_ant = datetime.datetime.now() - datetime.timedelta(minutes=1)
+db.initialize()
 model = tensorflow.keras.models.load_model("converted_keras\keras_model.h5")
-color = (0,0,0)
 text = ''
+color = (0,0,0)
 est_ant = None
-
 
 def detect_mask(img_path: str):
     '''Detecta si el rostro reconocido está usando cubrebocas o no, inicializa 
@@ -40,7 +36,8 @@ def detect_mask(img_path: str):
 
     # Correr el motor de inferencia
     prediction = model.predict(data)
-    global color, text, est_ant
+
+    global text, color, est_ant
 
     mask_prediction = prediction[0][1]
 
@@ -51,27 +48,32 @@ def detect_mask(img_path: str):
         if est_ant is False or est_ant is None:
             save_state('con_mascara')
             est_ant = True 
-    else:
-        text = 'No tiene cubrebocas ' + str(round(prediction[0][0]*100,1)) + '%'       
-        color = (0,0,255)
+        return color
+    
+    text = 'No tiene cubrebocas ' + str(round(prediction[0][0]*100,1)) + '%'       
+    color = (0,0,255)
 
-        if est_ant or est_ant is None:
-            save_state('sin_mascara')
-            est_ant = False 
+    if est_ant or est_ant is None:
+        save_state('sin_mascara')
+        est_ant = False       
+    return color
 
 
 def save_state(state: str):
     '''Registra el estado (con_mascara o sin_mascara) con fecha y hora'''
     try:
         date = str(datetime.datetime.now())
-        data.save_state(state, date)
+        db.save_state(state, date)
         print('Estado guardado en DB:', state, date)
     except:
         print('Ha ocurrido un error y no se ha podido guardar el estado en la BD')
     
 
+def show_video():
+    global cap, color, est_ant
+    face_locations = []   
+    flag_ant = datetime.datetime.now() - datetime.timedelta(seconds=10)
 
-while True:
     ret, frame = cap.read() 
     rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
     face_locations = face_recognition.face_locations(rgb)
@@ -87,14 +89,19 @@ while True:
         if flag > (flag_ant + time_change):   
             path = 'Code\imagenes\Frame.jpg'
             cv2.imwrite(path, frame)
-            detect_mask(path)
+            color = detect_mask(path)
             flag_ant = datetime.datetime.now()
 
+    frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+    im = Image.fromarray(frame)
+    img = ImageTk.PhotoImage(image=im)
+    return img
 
-    cv2.imshow('Mask Detector', frame)
-    if cv2.waitKey(1) == ord('q'):
-        cap.release()
-        cv2.destroyAllWindows()
-        os.remove('Code\imagenes\Frame.jpg')
-        break
-        
+
+def capture():
+    global cap
+    cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
+
+
+
+

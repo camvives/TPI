@@ -9,7 +9,7 @@ import tensorflow.keras
 import numpy as np
 from PIL import Image, ImageOps, ImageTk
 import db
-import time
+import imutils
 
 db.initialize()
 model = tensorflow.keras.models.load_model("converted_keras\keras_model.h5")
@@ -81,6 +81,7 @@ def show_video():
     process_image(frame)
 
     frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+    frame = imutils.resize(frame, width=640)
     im = Image.fromarray(frame)
     img = ImageTk.PhotoImage(image=im)
     return img
@@ -88,6 +89,10 @@ def show_video():
 def capture():
     global cap
     cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
+
+def release():
+    cap.release()
+    cv2.destroyAllWindows()
 
 def process_image(frame: array):
     path = 'Code\imagenes\Frame.jpg'
@@ -99,14 +104,14 @@ def process_image(frame: array):
     if state != None:
         prev_st, prev_time = state
         now = datetime.datetime.now()
-        extra_time = prev_time + datetime.timedelta(seconds=30)
+        extra_time = prev_time + datetime.timedelta(seconds=20)
         
         if has_mask:
             act_state = 'con_mascara'
         else:
             act_state = 'sin_mascara' 
 
-        if prev_st != has_mask or now > extra_time:
+        if now > extra_time:
             save_state(act_state)
     else:
         save_state("init")

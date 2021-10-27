@@ -1,26 +1,28 @@
 import tkinter as tk     
 from tkinter import messagebox
-from controller import show_video, capture, release
+from controller import *
 import os 
 
-def visualizar():
-    global exit 
+def visualizar(exit: bool):
     if not exit:
-        img = show_video()
-        lblVideo.configure(image=img)
-        lblVideo.image = img
-        lblVideo.after(10, visualizar)
+        try:       
+            img = show_video()
+            lbl_Video.configure(image=img)
+            lbl_Video.image = img
 
+            f = lambda: visualizar(False)
+            lbl_Video.after(10, f)     
 
+        except:
+            lbl_Video.after_cancel(lbl_Video)
+
+    else:   
+        lbl_Video.after_cancel(lbl_Video)
+        
 def init():
-    global exit
-    
-    exit = False
     capture()
-    visualizar()
+    visualizar(False)
     create_video_window()
-    
-    
     
 def on_closing():
     if messagebox.askokcancel("Salir", "¿Esta seguro que desea salir?"):
@@ -33,18 +35,25 @@ def on_closing():
         root.destroy()
 
 def on_closing_video_window():
-    global exit
-    
-    exit = True
     release()
+    visualizar(True)
     video_window.withdraw()
     root.deiconify()
 
 def create_video_window():
     video_window.deiconify()
     root.withdraw()
+    video_window.state('zoomed')
     
-exit = False
+def get_color():
+    global COLOR
+    if COLOR == (0,0,0):
+        return "black"
+    elif COLOR == (0,255,0):
+        return "green"
+    elif COLOR == (255,0,0):
+        return "red"
+
 
 # Creación de ventanas
 root = tk.Tk()
@@ -56,13 +65,14 @@ root.geometry("800x500")
 root.resizable(0,0)
 root.title("FaceMask Detector")
 
+# Imagen de fondo y texto de ventana principal
 bg = tk.PhotoImage(file="Code\imagenes\\background.png")
 canvas = tk.Canvas(root, width=800, height=500)
 canvas.pack(fill="both", expand=True)
 canvas.create_image(0, 0, image=bg, anchor="nw")
-
 canvas.create_text(400, 150, text="FaceMask Detector", font=("Helvetica", 50))
 
+# Botones ventana principal
 frame = tk.Frame(root)
 frame.pack(pady=20)
 
@@ -73,8 +83,17 @@ btn_stats = tk.Button(root, text="Estadísticas", font=("Helvetica", 12), width=
 btn_stats_window = canvas.create_window(300, 320, anchor="nw", window=btn_stats)
 
 # Ventana de video
-lblVideo = tk.Label(video_window)
-lblVideo.grid(column=0, row=1, columnspan=2)
+
+lbl_Video = tk.Label(video_window)
+lbl_Video.grid(column=0, row=1, columnspan=2)
+
+color = get_color()
+text = TEXT
+
+frame = tk.Frame(video_window, width=300, height=50, highlightbackground=color, highlightthickness=2)
+frame.place(x=50, y=500)
+label = tk.Label(frame, text="test", font=("Helvetica", 30)).pack()
+
 
 # Protocolos de cierre
 root.protocol("WM_DELETE_WINDOW", on_closing)

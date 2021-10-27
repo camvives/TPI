@@ -2,8 +2,6 @@ from sqlite3.dbapi2 import Error
 import cv2
 import face_recognition
 import datetime
-from face_recognition_models import cnn_face_detector_model_location
-from numpy.core import machar
 from numpy.core.records import array
 import tensorflow.keras
 import numpy as np
@@ -13,18 +11,18 @@ import imutils
 
 db.initialize()
 model = tensorflow.keras.models.load_model("converted_keras\keras_model.h5")
-color = (0,0,0)
-text = ' '
+COLOR = (0,0,0)
+TEXT = ' '
 
 def change_state(has_mask:bool, prediction:int):
-    global color, text
+    global COLOR, TEXT
 
-    if  has_mask:
-        text = 'Tiene cubrebocas ' + str(round(prediction*100,1)) + '%'
-        color = (0, 255, 0)
+    if has_mask:
+        TEXT = 'Tiene cubrebocas ' + str(round(prediction*100,1)) + '%'
+        COLOR = (0, 255, 0)
     else:
-        text = 'No tiene cubrebocas ' + str(round(prediction*100,1)) + '%'       
-        color = (0,0,255)
+        TEXT = 'No tiene cubrebocas ' + str(round(prediction*100,1)) + '%'       
+        COLOR = (0,0,255)
 
 def detect_mask(img_path: str):
     '''Detecta si el rostro reconocido está usando cubrebocas o no y devuelve 
@@ -65,26 +63,29 @@ def save_state(state: str):
         print('Ha ocurrido un error y no se ha podido guardar el estado en la BD')
     
 def show_video():
-    global cap, color, text
-    face_locations = []   
+    try:
+        global cap, COLOR, TEXT
+        face_locations = []   
 
-    ret, frame = cap.read() 
-    rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-    face_locations = face_recognition.face_locations(rgb)
-    
-    if face_locations:
-        flag = datetime.datetime.now()
-        for top, right, bottom, left in face_locations:          
-            cv2.rectangle(frame, (left-15, top-35), (right+15, bottom+15), color, 3)
-            cv2.putText(frame, text, (20, 50), cv2.FONT_HERSHEY_PLAIN, 1, color, 1)
+        ret, frame = cap.read() 
+        rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        face_locations = face_recognition.face_locations(rgb)
+        
+        if face_locations:
+            flag = datetime.datetime.now()
+            for top, right, bottom, left in face_locations:          
+                cv2.rectangle(frame, (left-15, top-35), (right+15, bottom+15), COLOR, 3)
+                cv2.putText(frame, TEXT, (20, 50), cv2.FONT_HERSHEY_PLAIN, 1, COLOR, 1)
 
-    process_image(frame)
+        process_image(frame)
 
-    frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-    frame = imutils.resize(frame, width=640)
-    im = Image.fromarray(frame)
-    img = ImageTk.PhotoImage(image=im)
-    return img
+        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        frame = imutils.resize(frame, width=640)
+        im = Image.fromarray(frame)
+        img = ImageTk.PhotoImage(image=im)
+        return img
+    except:
+        raise
 
 def capture():
     global cap

@@ -11,18 +11,16 @@ import imutils
 
 db.initialize()
 model = tensorflow.keras.models.load_model("converted_keras\keras_model.h5")
-COLOR = (0,0,0)
-TEXT = ' '
 
 def change_state(has_mask:bool, prediction:int):
-    global COLOR, TEXT
-
     if has_mask:
-        TEXT = 'Tiene cubrebocas ' + str(round(prediction*100,1)) + '%'
-        COLOR = (0, 255, 0)
-    else:
-        TEXT = 'No tiene cubrebocas ' + str(round(prediction*100,1)) + '%'       
-        COLOR = (0,0,255)
+        text = 'Tiene cubrebocas ' + str(round(prediction*100,1)) + '%'
+        color = (0, 255, 0)
+        return color, text
+
+    text = 'No tiene cubrebocas ' + str(round(prediction*100,1)) + '%'       
+    color = (0,0,255)
+    return color, text
 
 def detect_mask(img_path: str):
     '''Detecta si el rostro reconocido está usando cubrebocas o no y devuelve 
@@ -64,26 +62,27 @@ def save_state(state: str):
     
 def show_video():
     try:
-        global cap, COLOR, TEXT
+        global cap
         face_locations = []   
 
-        ret, frame = cap.read() 
+        _, frame = cap.read() 
         rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         face_locations = face_recognition.face_locations(rgb)
-        
-        if face_locations:
-            flag = datetime.datetime.now()
-            for top, right, bottom, left in face_locations:          
-                cv2.rectangle(frame, (left-15, top-35), (right+15, bottom+15), COLOR, 3)
-                cv2.putText(frame, TEXT, (20, 50), cv2.FONT_HERSHEY_PLAIN, 1, COLOR, 1)
 
-        process_image(frame)
+        color, text = process_image(frame)
+
+        if face_locations:
+            for top, right, bottom, left in face_locations:          
+                cv2.rectangle(frame, (left-15, top-35), (right+15, bottom+15), color, 3)
+                cv2.putText(frame, text, (20, 50), cv2.FONT_HERSHEY_PLAIN, 1, color, 1)
 
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         frame = imutils.resize(frame, width=640)
         im = Image.fromarray(frame)
         img = ImageTk.PhotoImage(image=im)
-        return img
+
+        return img, color
+
     except:
         raise
 
@@ -99,21 +98,28 @@ def process_image(frame: array):
     path = 'Code\imagenes\Frame.jpg'
     cv2.imwrite(path, frame)
     has_mask, percent = detect_mask(path)
-    change_state(has_mask, percent)
+    color, text = change_state(has_mask, percent)
 
     state = db.get_last_state()
     if state != None:
-        prev_st, prev_time = state
+        prev_state, prev_time = state
         now = datetime.datetime.now()
-        extra_time = prev_time + datetime.timedelta(seconds=20)
+        extra_time = prev_time + datetime.timedelta(seconds=30)
+        extra_time_sm = prev_time + datetime.timedelta(seconds=5)
         
         if has_mask:
             act_state = 'con_mascara'
         else:
             act_state = 'sin_mascara' 
 
-        if now > extra_time:
+        stable_state_changed = (prev_state != has_mask) and (now > extra_time_sm)
+
+        if now > extra_time or stable_state_changed:
             save_state(act_state)
     else:
         save_state("init")
 
+    return color, text
+
+def get_time():
+    return datetime.datetime.now()

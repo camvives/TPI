@@ -51,3 +51,4 @@ def get_last_state():
         raise
     finally:
         con.close()
+

@@ -6,13 +6,14 @@ import os
 def visualizar(exit: bool):
     if not exit:
         try:       
-            img = show_video()
+            img, color = show_video()
             lbl_Video.configure(image=img)
             lbl_Video.image = img
+            set_label(color)
+            set_time()
 
             f = lambda: visualizar(False)
-            lbl_Video.after(10, f)     
-
+            lbl_Video.after(10, f)    
         except:
             lbl_Video.after_cancel(lbl_Video)
 
@@ -45,22 +46,27 @@ def create_video_window():
     root.withdraw()
     video_window.state('zoomed')
     
-def get_color():
-    global COLOR
-    if COLOR == (0,0,0):
-        return "black"
-    elif COLOR == (0,255,0):
-        return "green"
-    elif COLOR == (255,0,0):
-        return "red"
+def set_label(color):
+    if color == (0,0,255):
+        label_acceso["fg"] = "red"
+        label_acceso["text"] = "ACCESO DENEGADO"
 
+    elif color == (0,255,0):
+        label_acceso["fg"] = "green"
+        label_acceso["text"] = "ACCESO PERMITIDO"
+
+def set_time():
+    active_time = get_time() - START_TIME
+    label_time["text"] = active_time
+
+START_TIME = get_time()
 
 # Creación de ventanas
 root = tk.Tk()
 video_window = tk.Toplevel(root)
 video_window.withdraw()
 
-# Ventana principal
+#### Ventana principal ####
 root.geometry("800x500")
 root.resizable(0,0)
 root.title("FaceMask Detector")
@@ -82,20 +88,36 @@ btn_init_window = canvas.create_window(170, 250, anchor="nw", window=btn_init)
 btn_stats = tk.Button(root, text="Estadísticas", font=("Helvetica", 12), width=20)
 btn_stats_window = canvas.create_window(300, 320, anchor="nw", window=btn_stats)
 
-# Ventana de video
+#### Ventana de video ####
+video_window.title("FaceMask Detector")
 
+# Video
 lbl_Video = tk.Label(video_window)
 lbl_Video.grid(column=0, row=1, columnspan=2)
 
-color = get_color()
-text = TEXT
+## Frame etiqueta de acceso ##
+frame_video = tk.Frame(video_window, width=100, height=30)
+frame_video.place(x=150, y=500)
 
-frame = tk.Frame(video_window, width=300, height=50, highlightbackground=color, highlightthickness=2)
-frame.place(x=50, y=500)
-label = tk.Label(frame, text="test", font=("Helvetica", 30)).pack()
+# Etiqueta de acceso
+label_acceso = tk.Label(frame_video, text="Detectando rostros...", font=("Consolas", 30))
+label_acceso.pack(pady=50)
+
+## Frame de tiempo ##
+frame_time = tk.Frame(video_window, width=100, height=30)
+frame_time.place(x=825, y=70)
+
+# Etiquetas de tiempo
+lbl_time = tk.Label(frame_time, text="TIEMPO ACTIVO", font=("Consolas", 30))
+label_time = tk.Label(frame_time, font=("Consolas", 20))
+lbl_time.pack(pady=5)
+label_time.pack(pady=10)
+
+# Frame grafica datos sesión # 
 
 
-# Protocolos de cierre
+
+#### Protocolos de cierre ####
 root.protocol("WM_DELETE_WINDOW", on_closing)
 video_window.protocol("WM_DELETE_WINDOW", on_closing_video_window)
 

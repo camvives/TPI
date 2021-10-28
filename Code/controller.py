@@ -8,6 +8,7 @@ import numpy as np
 from PIL import Image, ImageOps, ImageTk
 import db
 import imutils
+import matplotlib.pyplot as plt
 
 db.initialize()
 model = tensorflow.keras.models.load_model("converted_keras\keras_model.h5")
@@ -123,3 +124,19 @@ def process_image(frame: array):
 
 def get_time():
     return datetime.datetime.now()
+
+def get_session_graph(start_time: datetime):
+    data = db.get_session_data(start_time)
+    
+    with_mask = 0
+    without_mask = 0
+
+    for state in data:
+        if state:
+            with_mask += 1
+        else: 
+            without_mask += 1
+    
+    total = without_mask + with_mask
+
+    return (with_mask, without_mask, total)

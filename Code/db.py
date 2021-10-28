@@ -36,16 +36,42 @@ def get_last_state():
         
         row = cur.fetchone()
         if row != None:
-            [estado, tiempo] = row
+            [state, time] = row
 
-            if estado == 'con_mascara':
-                estado = True
+            if state == 'con_mascara':
+                state = True
             else:
-                estado= False
+                state= False
 
-            tiempo = datetime.strptime(tiempo, "%Y-%m-%d %H:%M:%S.%f")
+            time = datetime.strptime(time, "%Y-%m-%d %H:%M:%S.%f")
 
-            return estado, tiempo
+            return state, time
+
+    except sqlite3.Error as error:
+        raise
+    finally:
+        con.close()
+
+
+def get_session_data(start_time: datetime):
+    try:
+        con =  sqlite3.connect('facemask.db')
+        cur = con.cursor()
+        cur.execute(f"SELECT estado FROM registros WHERE fecha > '{start_time}'")
+        
+        session_data = []
+        data = cur.fetchall()
+        data = [x[0] for x in data] 
+
+        for st in data:
+            if st == 'con_mascara':
+                state = True
+            else:
+                state = False
+            
+            session_data.append(state)
+
+        return session_data
 
     except sqlite3.Error as error:
         raise

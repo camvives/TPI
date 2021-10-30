@@ -45,6 +45,7 @@ def create_video_window():
     video_window.deiconify()
     root.withdraw()
     video_window.state('zoomed')
+    print(video_window.winfo_geometry())
 
     
 def set_label(color):
@@ -134,7 +135,7 @@ lbl_wom = tk.Label(frame_data_wom, font=("Consolas", 40))
 lbl_wom.pack()
 
 frame_data_total = tk.Frame(video_window, width=10, height=10)
-frame_data_total.place(x=1025, y=555)
+frame_data_total.place(x=975, y=570)
 lbl_total = tk.Label(frame_data_total, font=("Consolas", 30)) 
 lbl_total.pack()
 

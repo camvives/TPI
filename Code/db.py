@@ -1,5 +1,6 @@
 import sqlite3
 from datetime import datetime
+import dateutil.relativedelta
 
 def initialize():
     '''Inicializa la base de datos con tabla 'registros' '''
@@ -77,4 +78,21 @@ def get_session_data(start_time: datetime):
         raise
     finally:
         con.close()
+
+def get_month_data():
+    try:
+        con =  sqlite3.connect('facemask.db')
+        cur = con.cursor()
+        last_month = datetime.now() + dateutil.relativedelta.relativedelta(months=-1)
+        cur.execute(f"SELECT * FROM registros WHERE fecha > '{last_month}'")
+
+        data_month = cur.fetchall()
+        
+        return data_month
+
+    except sqlite3.Error as error:
+        raise
+    finally:
+        con.close()
+
 

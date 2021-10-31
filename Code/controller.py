@@ -125,7 +125,7 @@ def process_image(frame: array):
 def get_time():
     return datetime.datetime.now()
 
-def get_session_graph(start_time: datetime):
+def get_session_data(start_time: datetime):
     data = db.get_session_data(start_time)
     
     with_mask = 0
@@ -140,3 +140,67 @@ def get_session_graph(start_time: datetime):
     total = without_mask + with_mask
 
     return (with_mask, without_mask, total)
+
+
+def get_month_data():
+    month_data = db.get_month_data()
+
+    count_with_mask = []
+    count_without_mask = []
+    days = []
+    month_cases = []
+
+    for data in month_data:
+        day = data[1]
+        days.append(int(day[8:10]))
+        
+    for i in range(31):
+        day_cases = days.count(i)
+        month_cases.append(day_cases)
+    
+    for day_cases in month_cases:
+        day_data = month_data[:day_cases]
+        
+        with_mask = 0
+        without_mask = 0
+
+        for data in day_data:
+            if data[0] == 'con_mascara':
+                with_mask += 1
+            if data[0] == 'sin_mascara':    
+                without_mask += 1
+        
+        count_with_mask.append(with_mask)
+        count_without_mask.append(without_mask)
+
+        del month_data[:day_cases]
+        
+    days = list(set(days))
+    count_without_mask = list(filter(lambda num: num != 0, count_without_mask))
+    count_with_mask = list(filter(lambda num: num != 0, count_with_mask))
+
+    plot_stats(days, count_with_mask, count_without_mask)
+
+def plot_stats(days: list, count_with_mask: list, count_without_mask: list):
+    x = np.arange(len(days))  # the label locations
+    width = 0.35  # the width of the bars
+
+    fig, ax = plt.subplots()
+    rects1 = ax.bar(x - width/2, count_with_mask, width, label='Con Máscara', color='green')
+    rects2 = ax.bar(x + width/2, count_without_mask, width, label='Sin Máscara', color='red')
+
+   
+    ax.set_ylabel('Cantidad de casos')
+    ax.set_xticks(x)
+    ax.set_xticklabels(days)
+    ax.legend()
+
+    ax.bar_label(rects1, padding=3)
+    ax.bar_label(rects2, padding=3)
+
+    fig.tight_layout()
+
+    plt.show()
+    
+    
+get_month_data()

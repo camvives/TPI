@@ -1,5 +1,6 @@
 import tkinter as tk     
 from tkinter import messagebox
+from tkinter.constants import COMMAND
 from controller import *
 import os 
 
@@ -41,13 +42,22 @@ def on_closing_video_window():
     video_window.withdraw()
     root.deiconify()
 
+def on_closing_stats_window():
+    stats_window.withdraw()
+    root.deiconify()
+
+
 def create_video_window():
     video_window.deiconify()
     root.withdraw()
     video_window.state('zoomed')
-    print(video_window.winfo_geometry())
 
-    
+def create_stats_window():
+    stats_window.deiconify()
+    root.withdraw()
+    stats_window.state('zoomed')
+
+
 def set_label(color):
     if color == (0,0,255):
         label_acceso["fg"] = "red"
@@ -62,7 +72,7 @@ def set_time():
     label_time["text"] = active_time
 
 def set_stats():
-    (wm, wom, total) = get_session_graph(START_TIME)
+    (wm, wom, total) = get_session_data(START_TIME)
     lbl_wm["text"] = wm
     lbl_wom["text"] = wom
     lbl_total["text"] = total
@@ -73,6 +83,8 @@ START_TIME = get_time()
 root = tk.Tk()
 video_window = tk.Toplevel(root)
 video_window.withdraw()
+stats_window = tk.Toplevel(root)
+stats_window.withdraw()
 
 #### Ventana principal ####
 root.geometry("800x500")
@@ -93,7 +105,7 @@ frame.pack(pady=20)
 btn_init = tk.Button(root, text="Iniciar",font=("Helvetica", 15), width=40, command=init)
 btn_init_window = canvas.create_window(170, 250, anchor="nw", window=btn_init)
 
-btn_stats = tk.Button(root, text="Estadísticas", font=("Helvetica", 12), width=20)
+btn_stats = tk.Button(root, text="Estadísticas", font=("Helvetica", 12), width=20, command=create_stats_window)
 btn_stats_window = canvas.create_window(300, 320, anchor="nw", window=btn_stats)
 
 #### Ventana de video ####
@@ -139,9 +151,13 @@ frame_data_total.place(x=975, y=570)
 lbl_total = tk.Label(frame_data_total, font=("Consolas", 30)) 
 lbl_total.pack()
 
+### Ventana de estadísticas ###
+stats_window.title("FaceMask Detector")
+
 
 #### Protocolos de cierre ####
 root.protocol("WM_DELETE_WINDOW", on_closing)
 video_window.protocol("WM_DELETE_WINDOW", on_closing_video_window)
+stats_window.protocol("WM_DELETE_WINDOW", on_closing_stats_window)
 
 root.mainloop()

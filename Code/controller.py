@@ -154,7 +154,7 @@ def get_month_data():
         day = data[1]
         days.append(int(day[8:10]))
         
-    for i in range(31):
+    for i in range(32):
         day_cases = days.count(i)
         month_cases.append(day_cases)
     
@@ -176,20 +176,28 @@ def get_month_data():
         del month_data[:day_cases]
         
     days = list(set(days))
-    count_without_mask = list(filter(lambda num: num != 0, count_without_mask))
-    count_with_mask = list(filter(lambda num: num != 0, count_with_mask))
+    
+    cwm = []
+    cwom = []
 
-    plot_stats(days, count_with_mask, count_without_mask)
+    for day in days:
+        cwm.append(count_with_mask[day])
+        cwom.append(count_without_mask[day])
 
-def plot_stats(days: list, count_with_mask: list, count_without_mask: list):
+    fig = plot_stats(days, cwm, cwom, "data_month")
+    return fig
+    
+    
+
+def plot_stats(days: list, count_with_mask: list, count_without_mask: list, file_name:str):
     x = np.arange(len(days))  # the label locations
     width = 0.35  # the width of the bars
 
-    fig, ax = plt.subplots()
+    fig = plt.figure()
+    ax = fig.add_subplot()
     rects1 = ax.bar(x - width/2, count_with_mask, width, label='Con Máscara', color='green')
     rects2 = ax.bar(x + width/2, count_without_mask, width, label='Sin Máscara', color='red')
 
-   
     ax.set_ylabel('Cantidad de casos')
     ax.set_xticks(x)
     ax.set_xticklabels(days)
@@ -199,8 +207,4 @@ def plot_stats(days: list, count_with_mask: list, count_without_mask: list):
     ax.bar_label(rects2, padding=3)
 
     fig.tight_layout()
-
-    plt.show()
-    
-    
-get_month_data()
+    return fig

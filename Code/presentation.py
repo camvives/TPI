@@ -1,8 +1,9 @@
 import tkinter as tk     
 from tkinter import messagebox
-from tkinter.constants import COMMAND
 from controller import *
-import os 
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+import os
+
 
 def visualizar(exit: bool):
     if not exit:
@@ -46,7 +47,6 @@ def on_closing_stats_window():
     stats_window.withdraw()
     root.deiconify()
 
-
 def create_video_window():
     video_window.deiconify()
     root.withdraw()
@@ -55,8 +55,9 @@ def create_video_window():
 def create_stats_window():
     stats_window.deiconify()
     root.withdraw()
+    graph_stats()
     stats_window.state('zoomed')
-
+    
 
 def set_label(color):
     if color == (0,0,255):
@@ -77,6 +78,11 @@ def set_stats():
     lbl_wom["text"] = wom
     lbl_total["text"] = total
 
+def graph_stats():
+    fig = get_month_data()
+    canvas_month = FigureCanvasTkAgg(fig, master=stats_window)
+    canvas_month.get_tk_widget().grid(column=0, row=0)
+
 START_TIME = get_time()
 
 # Creación de ventanas
@@ -85,6 +91,7 @@ video_window = tk.Toplevel(root)
 video_window.withdraw()
 stats_window = tk.Toplevel(root)
 stats_window.withdraw()
+
 
 #### Ventana principal ####
 root.geometry("800x500")
@@ -113,7 +120,6 @@ video_window.title("FaceMask Detector")
 bg_video = tk.PhotoImage(file="Code\\imagenes\\tk_bg.png")
 lbl_bg = tk.Label(video_window, image=bg_video)
 lbl_bg.place(x=0, y=0)
-
 
 # Video
 lbl_Video = tk.Label(video_window)

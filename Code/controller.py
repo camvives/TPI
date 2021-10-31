@@ -184,12 +184,49 @@ def get_month_data():
         cwm.append(count_with_mask[day])
         cwom.append(count_without_mask[day])
 
-    fig = plot_stats(days, cwm, cwom, "data_month")
+    fig = plot_stats(days, cwm, cwom, "Datos del mes")
     return fig
     
-    
+def get_week_data():
+    week_data = db.get_week_data()
 
-def plot_stats(days: list, count_with_mask: list, count_without_mask: list, file_name:str):
+    count_with_mask = []
+    count_without_mask = []
+    days = []
+    week_cases = []
+
+    for data in week_data:
+        day = datetime.datetime.strptime(data[1], "%Y-%m-%d %H:%M:%S.%f")
+        days.append(day.weekday()+1)
+
+    for i in range(7):
+        day_cases = days.count(i+1)
+        week_cases.append(day_cases)
+
+    for day_cases in week_cases:
+        day_data = week_data[:day_cases]
+        
+        with_mask = 0
+        without_mask = 0
+
+        for data in day_data:
+            if data[0] == 'con_mascara':
+                with_mask += 1
+            if data[0] == 'sin_mascara':    
+                without_mask += 1
+        
+        count_with_mask.append(with_mask)
+        count_without_mask.append(without_mask)
+
+        del week_data[:day_cases]
+
+    days = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
+
+    fig = plot_stats(days, count_with_mask, count_without_mask, "Datos de la semana")
+    return fig
+
+
+def plot_stats(days: list, count_with_mask: list, count_without_mask: list, fig_title:str):
     x = np.arange(len(days))  # the label locations
     width = 0.35  # the width of the bars
 
@@ -198,6 +235,7 @@ def plot_stats(days: list, count_with_mask: list, count_without_mask: list, file
     rects1 = ax.bar(x - width/2, count_with_mask, width, label='Con Máscara', color='green')
     rects2 = ax.bar(x + width/2, count_without_mask, width, label='Sin Máscara', color='red')
 
+    ax.set_title(fig_title)
     ax.set_ylabel('Cantidad de casos')
     ax.set_xticks(x)
     ax.set_xticklabels(days)
@@ -208,3 +246,4 @@ def plot_stats(days: list, count_with_mask: list, count_without_mask: list, file
 
     fig.tight_layout()
     return fig
+

@@ -58,7 +58,6 @@ def create_stats_window():
     graph_stats()
     stats_window.state('zoomed')
     
-
 def set_label(color):
     if color == (0,0,255):
         label_acceso["fg"] = "red"
@@ -80,8 +79,11 @@ def set_stats():
 
 def graph_stats():
     fig = get_month_data()
-    canvas_month = FigureCanvasTkAgg(fig, master=stats_window)
-    canvas_month.get_tk_widget().grid(column=0, row=0)
+    fig2 = get_week_data()
+    canvas_month = FigureCanvasTkAgg(fig, master=frame_stats)
+    canvas_month.get_tk_widget().grid(row=1, column=0,  sticky=tk.N+tk.E+tk.S+tk.W)
+    canvas_week = FigureCanvasTkAgg(fig2, master=frame_stats)
+    canvas_week.get_tk_widget().grid(row=1, column=1,  sticky=tk.N+tk.E+tk.S+tk.W)
 
 START_TIME = get_time()
 
@@ -159,7 +161,9 @@ lbl_total.pack()
 
 ### Ventana de estadísticas ###
 stats_window.title("FaceMask Detector")
-
+stats_window.grid_rowconfigure(0, weight=0)
+frame_stats = tk.Frame(stats_window, width=10, height=10)
+frame_stats.place(x=0, y=150)
 
 #### Protocolos de cierre ####
 root.protocol("WM_DELETE_WINDOW", on_closing)

@@ -1,5 +1,5 @@
 import sqlite3
-from datetime import datetime
+from datetime import datetime, timedelta
 import dateutil.relativedelta
 
 def initialize():
@@ -95,4 +95,19 @@ def get_month_data():
     finally:
         con.close()
 
+def get_week_data():
+    try:
+        con =  sqlite3.connect('facemask.db')
+        cur = con.cursor()
+        now = datetime.now()
+        last_monday = now - timedelta(days = now.weekday())
+        cur.execute(f"SELECT * FROM registros WHERE fecha > '{last_monday}'")
 
+        data_week = cur.fetchall()
+        
+        return data_week
+
+    except sqlite3.Error as error:
+        raise
+    finally:
+        con.close()

@@ -89,12 +89,14 @@ START_TIME = get_time()
 
 # Creación de ventanas
 root = tk.Tk()
+
 video_window = tk.Toplevel(root)
 video_window.withdraw()
+video_window.iconbitmap('Code\imagenes\icon.ico')
 stats_window = tk.Toplevel(root)
 stats_window.withdraw()
-
-
+stats_window.iconbitmap('Code\imagenes\icon.ico')
+root.iconbitmap('Code\imagenes\icon.ico')
 #### Ventana principal ####
 root.geometry("800x500")
 root.resizable(0,0)

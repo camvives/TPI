@@ -27,7 +27,6 @@ def save_state(state: str, date:str):
         raise
     finally:
         con.close()
-
        
 def get_last_state():
     try:

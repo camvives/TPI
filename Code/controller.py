@@ -238,12 +238,11 @@ def plot_stats(days: list, count_with_mask: list, count_without_mask: list, fig_
     ax.set_title(fig_title)
     ax.set_ylabel('Cantidad de casos')
     ax.set_xticks(x)
-    ax.set_xticklabels(days)
+    ax.set_xticklabels(days, fontsize=8)
     ax.legend()
+    ax.autoscale(tight=True, axis='x')
+    ax.bar_label(rects1, padding=1, fontsize=8)
+    ax.bar_label(rects2, padding=1, fontsize=8)
 
-    ax.bar_label(rects1, padding=3)
-    ax.bar_label(rects2, padding=3)
-
-    fig.tight_layout()
     return fig
 

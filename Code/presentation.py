@@ -5,7 +5,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import os
 
 
-def visualizar(exit: bool):
+def visualize(exit: bool):
     if not exit:
         try:       
             img, color = show_video()
@@ -15,7 +15,7 @@ def visualizar(exit: bool):
             set_time()
             set_stats()
 
-            f = lambda: visualizar(False)
+            f = lambda: visualize(False)
             lbl_Video.after(10, f)    
         except:
             lbl_Video.after_cancel(lbl_Video)
@@ -24,7 +24,7 @@ def visualizar(exit: bool):
         
 def init():
     capture()
-    visualizar(False)
+    visualize(False)
     create_video_window()
     
 def on_closing():
@@ -39,7 +39,7 @@ def on_closing():
 
 def on_closing_video_window():
     release()
-    visualizar(True)
+    visualize(True)
     video_window.withdraw()
     root.deiconify()
 

@@ -1,4 +1,3 @@
-import presentation
-from subprocess import Popen
+from presentation import main
 
-Popen('python Code\presentation.py')
+main()

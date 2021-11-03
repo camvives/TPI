@@ -4,6 +4,7 @@ from typing import Tuple
 from controller import *
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import os
+from constants import *
 
 class UI(tk.Frame):
     """Ventana de inicio"""
@@ -161,7 +162,7 @@ class StatsWindow:
         self.frame_stats.place(x=0, y=150)
 
         # Protocolo de cierre
-        self.protocol("WM_DELETE_WINDOW", self.close_windows)
+        self.parent.protocol("WM_DELETE_WINDOW", self.close_windows)
 
         self.graph_stats()
         
@@ -177,11 +178,9 @@ class StatsWindow:
     def close_windows(self):
         self.parent.destroy()    
 
-
-if __name__ == "__main__":
-    START_TIME = get_time()
-    ROOT = tk.Tk()
-    ROOT.geometry("800x500")
-    ROOT.resizable(0,0)
+def main():
     APP = UI(parent=ROOT)
     APP.mainloop()
+
+
+  

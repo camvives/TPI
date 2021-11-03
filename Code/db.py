@@ -13,7 +13,6 @@ def initialize():
         raise 
     finally:
         con.close()
-
                 
 def save_state(state: str, date:str):
     '''Guarda el estado en la tabla 'registros' de la base de datos'''
@@ -52,12 +51,11 @@ def get_last_state():
     finally:
         con.close()
 
-
-def get_session_data(start_time: datetime):
+def get_session_data(start_date: datetime):
     try:
         con =  sqlite3.connect('facemask.db')
         cur = con.cursor()
-        cur.execute(f"SELECT estado FROM registros WHERE fecha > '{start_time}'")
+        cur.execute(f"SELECT estado FROM registros WHERE fecha > '{start_date}'")
         
         session_data = []
         data = cur.fetchall()
@@ -82,8 +80,10 @@ def get_month_data():
     try:
         con =  sqlite3.connect('facemask.db')
         cur = con.cursor()
+        today = datetime.now().replace(hour=0)
         last_month = datetime.now() + dateutil.relativedelta.relativedelta(months=-1)
-        cur.execute(f"SELECT * FROM registros WHERE fecha > '{last_month}'")
+        cur.execute(f'''SELECT * FROM registros WHERE fecha > '{last_month}' AND fecha < '{today}'  
+                        ORDER BY date(fecha) DESC''')
 
         data_month = cur.fetchall()
         
@@ -98,8 +98,8 @@ def get_week_data():
     try:
         con =  sqlite3.connect('facemask.db')
         cur = con.cursor()
-        now = datetime.now()
-        last_monday = now - timedelta(days = now.weekday())
+        today = datetime.now().replace(hour=0)
+        last_monday = today - timedelta(days = today.weekday())
         cur.execute(f"SELECT * FROM registros WHERE fecha > '{last_monday}'")
 
         data_week = cur.fetchall()

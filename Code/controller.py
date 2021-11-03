@@ -141,21 +141,24 @@ def get_session_data(start_time: datetime):
 
     return (with_mask, without_mask, total)
 
-
 def get_month_data():
     month_data = db.get_month_data()
 
     count_with_mask = []
     count_without_mask = []
     days = []
+    days_lbls = []
     month_cases = []
 
     for data in month_data:
         day = data[1]
         days.append(int(day[8:10]))
-        
-    for i in range(32):
-        day_cases = days.count(i)
+        days_lbls.append(day[5:10])     
+
+    days_lbls = list(dict.fromkeys(days_lbls))  
+    
+    for i in range(len(days_lbls)):
+        day_cases = days.count(days[i])
         month_cases.append(day_cases)
     
     for day_cases in month_cases:
@@ -167,24 +170,19 @@ def get_month_data():
         for data in day_data:
             if data[0] == 'con_mascara':
                 with_mask += 1
-            if data[0] == 'sin_mascara':    
+            elif data[0] == 'sin_mascara':    
                 without_mask += 1
         
         count_with_mask.append(with_mask)
         count_without_mask.append(without_mask)
 
         del month_data[:day_cases]
-        
-    days = list(set(days))
-    
-    cwm = []
-    cwom = []
 
-    for day in days:
-        cwm.append(count_with_mask[day])
-        cwom.append(count_without_mask[day])
+    count_with_mask.reverse()
+    count_without_mask.reverse()
+    days_lbls.reverse()
 
-    fig = plot_stats(days, cwm, cwom, "Datos del mes")
+    fig = plot_stats(days_lbls, count_with_mask, count_without_mask, "Datos del mes")
     return fig
     
 def get_week_data():
@@ -225,7 +223,6 @@ def get_week_data():
     fig = plot_stats(days, count_with_mask, count_without_mask, "Datos de la semana")
     return fig
 
-
 def plot_stats(days: list, count_with_mask: list, count_without_mask: list, fig_title:str):
     x = np.arange(len(days))  # the label locations
     width = 0.35  # the width of the bars
@@ -238,7 +235,7 @@ def plot_stats(days: list, count_with_mask: list, count_without_mask: list, fig_
     ax.set_title(fig_title)
     ax.set_ylabel('Cantidad de casos')
     ax.set_xticks(x)
-    ax.set_xticklabels(days, fontsize=8)
+    ax.set_xticklabels(days, fontsize=8, rotation=-45)
     ax.legend()
     ax.autoscale(tight=True, axis='x')
     ax.bar_label(rects1, padding=1, fontsize=8)
@@ -246,3 +243,5 @@ def plot_stats(days: list, count_with_mask: list, count_without_mask: list, fig_
 
     return fig
 
+#fig = get_week_data()
+#plt.show()

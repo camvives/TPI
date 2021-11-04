@@ -14,6 +14,7 @@ db.initialize()
 model = tensorflow.keras.models.load_model("converted_keras\keras_model.h5")
 
 def change_state(has_mask:bool, prediction:int):
+    '''Cambia el estado actual de acuerdo a la predicción'''
     if has_mask:
         text = 'Tiene cubrebocas ' + str(round(prediction*100,1)) + '%'
         color = (0, 255, 0)
@@ -62,6 +63,7 @@ def save_state(state: str):
         print('Ha ocurrido un error y no se ha podido guardar el estado en la BD')
     
 def show_video():
+    '''Muestra la imagen con el cuadro rojo o verde según el estado y su predicción'''
     try:
         global cap
         face_locations = []   
@@ -88,14 +90,17 @@ def show_video():
         raise
 
 def capture():
+    '''Inicializa la captura de la cámara'''
     global cap
     cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
 
 def release():
+    '''Librea la captura de la cámara'''
     cap.release()
     cv2.destroyAllWindows()
 
 def process_image(frame: array):
+    '''Procesa la imagen capturada y decide si debe guardarse o no su estado'''
     path = 'Code\imagenes\Frame.jpg'
     cv2.imwrite(path, frame)
     has_mask, percent = detect_mask(path)
@@ -123,9 +128,12 @@ def process_image(frame: array):
     return color, text
 
 def get_time():
+    '''Obtiene la fecha y hora actual'''
     return datetime.datetime.now()
 
 def get_session_data(start_time: datetime):
+    '''Obtiene y procesa los datos de la sesión actual indicando la cantidad
+        de casos 'Con Máscara' y 'Sin Máscara' '''
     data = db.get_session_data(start_time)
     
     with_mask = 0
@@ -142,6 +150,9 @@ def get_session_data(start_time: datetime):
     return (with_mask, without_mask, total)
 
 def get_month_data():
+    '''Obtiene y procesa los datos del último mes indicando la cantidad
+        de casos 'Con Máscara' y 'Sin Máscara' '''
+
     month_data = db.get_month_data()
 
     count_with_mask = []
@@ -186,6 +197,9 @@ def get_month_data():
     return fig
     
 def get_week_data():
+    '''Obtiene y procesa los datos de la semana actual indicando la cantidad
+        de casos 'Con Máscara' y 'Sin Máscara' '''
+
     week_data = db.get_week_data()
 
     count_with_mask = []
@@ -224,8 +238,11 @@ def get_week_data():
     return fig
 
 def plot_stats(days: list, count_with_mask: list, count_without_mask: list, fig_title:str):
-    x = np.arange(len(days))  # the label locations
-    width = 0.35  # the width of the bars
+    '''Obtiene la figura del gráfico de barras de la cantidad de casos 
+        'Con Máscara' y 'Sin Máscara' en el periodo indicado'''
+
+    x = np.arange(len(days))  
+    width = 0.35  
 
     fig = plt.figure()
     ax = fig.add_subplot()
@@ -242,6 +259,3 @@ def plot_stats(days: list, count_with_mask: list, count_without_mask: list, fig_
     ax.bar_label(rects2, padding=1, fontsize=8)
 
     return fig
-
-#fig = get_week_data()
-#plt.show()

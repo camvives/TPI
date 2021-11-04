@@ -28,6 +28,7 @@ def save_state(state: str, date:str):
         con.close()
        
 def get_last_state():
+    '''Obtiene el estado y la fecha del último registro de la tabla 'registros' de la base de datos'''
     try:
         con =  sqlite3.connect('facemask.db')
         cur = con.cursor()
@@ -52,6 +53,7 @@ def get_last_state():
         con.close()
 
 def get_session_data(start_date: datetime):
+    '''Obtiene los estados desde que se inició la sesión a ahora'''
     try:
         con =  sqlite3.connect('facemask.db')
         cur = con.cursor()
@@ -77,6 +79,7 @@ def get_session_data(start_date: datetime):
         con.close()
 
 def get_month_data():
+    '''Obtiene los registros de los ultimos 30 dias'''
     try:
         con =  sqlite3.connect('facemask.db')
         cur = con.cursor()
@@ -95,6 +98,7 @@ def get_month_data():
         con.close()
 
 def get_week_data():
+    '''Obtiene los registros desde el lunes hasta el dia en curso'''
     try:
         con =  sqlite3.connect('facemask.db')
         cur = con.cursor()

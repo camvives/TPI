@@ -42,7 +42,7 @@ En la capa de negocios se emplea el lenguaje Python con las siguientes librería
 - Numpy: Es una librería especializada en el cálculo numérico y el análisis de datos, especialmente para un gran volumen de datos. Incorpora una nueva clase de objetos llamados arrays que permite representar colecciones de datos de un mismo tipo en varias dimensiones, y funciones muy eficientes para su manipulación.
 - OpenCV: Es una biblioteca libre de visión artificial originalmente desarrollada por Intel. OpenCV significa Open Computer Vision (Visión Artificial Abierta). Entre otras cosas, permite la detección de movimiento, reconocimiento de objetos, reconstrucción 3D a partir de imágenes, reconocimiento facial, etc.
 
-Es importante aclarar que para poder entrenar al modelo que detecta si una persona tiene máscara o no, se utilizó la herramienta Teacheble Machine de Google (https://teachablemachine.withgoogle.com/).
+Es importante aclarar que para poder entrenar al modelo que detecta si una persona tiene máscara o no, se utilizó la herramienta Teachable Machine de Google (https://teachablemachine.withgoogle.com/).
 Para esto, se ingresó en la aplicación un Dataset que contenía aproximadamente 1400 imágenes subdivididas en dos categorías: rostros con máscara y rostros sin máscara. De esta forma, el software de Google nos dió como resultado un conjunto de archivos .py que contienen los algoritmos que clasifican una imagen dada, según las características de la misma. 
 
 ### Capa de Presentación
